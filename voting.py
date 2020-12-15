@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# This program is designed to now give a voting user access to the terminal on the voting computer
+# This program is designed to now give a voting user access to the terminal on the voting computer.
 
 __author__ = '{Johannes Kistemaker}'
 __email__ = '{johannes.kistemaker@hva.nl}'
