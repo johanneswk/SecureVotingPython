@@ -6,8 +6,6 @@ __email__ = '{johannes.kistemaker@hva.nl}'
 
 import hashlib
 import os
-import csv
-import time
 
 from cryptography.fernet import Fernet
 from secure_delete import secure_delete
@@ -20,7 +18,6 @@ def key_create():
 
 def file_encrypt(original):
     f = Fernet(mykey)
-
     encrypted = f.encrypt(original)
 
     with open("vote.state", 'wb') as file:
@@ -34,31 +31,31 @@ def file_decrypt(encrypted_file):
         encrypted = file.read()
 
     decrypted = f.decrypt(encrypted)
-
     return decrypted
 
 
-def vote():
+def vote(voter, candidate):
     # Check if voter is in allowed voters list
     with open('voters.csv') as csv_file_voters:
-        csv_reader = csv.reader(csv_file_voters, delimiter=';')
-        for row_voters in csv_reader:
-            if persId in row_voters:
+        csv_voters = csv_file_voters.read().split(";", 2)
+        for row_voter_info in csv_voters:
+            if voter in row_voter_info:
                 # Hash persID number
                 h = hashlib.sha256()
-                h.update(persId.encode('utf-8'))
+                h.update(voter.encode('utf-8'))
                 hash_pid = h.hexdigest()
 
                 # Read temp file and check if voter already voted
                 decrypted_vote_state = file_decrypt("vote.state").decode()
-                csv_reader = csv.reader(decrypted_vote_state, delimiter=';')
-                for row_votes in csv_reader:
-                    if hash_pid in row_votes:
+                print(decrypted_vote_state)
+                csv_casted_votes = decrypted_vote_state.split(";", 1)
+                for row_votes_info in csv_casted_votes:
+                    if hash_pid in row_votes_info:
                         print("\nYou aren't eligible to vote or have already voted\n")
                         return
 
                 # Add casted vote to temp file
-                new_vote_state = decrypted_vote_state + str(hash_pid) + ";" + str(canId) + "\n"
+                new_vote_state = decrypted_vote_state + str(hash_pid) + ";" + str(candidate) + "\n"
                 file_encrypt(new_vote_state.encode())
                 print("Vote casted!")
                 return
@@ -80,7 +77,10 @@ def create():
 
 
 def results():
-    pass
+    decrypted_vote_state = file_decrypt("vote.state").decode()
+    print("EK: " + str(decrypted_vote_state.count("EK")))
+    print("FS: " + str(decrypted_vote_state.count("FS")))
+    print("TK: " + str(decrypted_vote_state.count("TK")))
 
 
 def stats():
@@ -132,18 +132,16 @@ if __name__ == '__main__':
                     c = usr_input.index('-c')
                     persId = usr_input[(p + 1)]
                     canId = usr_input[(c + 1)]
-                    print(persId)
-                    print(canId)
+                    # print(persId)
+                    # print(canId)
 
                     # Collect vote
-                    vote()
+                    vote(persId, canId)
 
-                    # Overwrite persId
+                    # Overwrite persId and canId
                     persId = os.urandom(16)
 
                     print(file_decrypt("vote.state").decode())
-
-
 
             elif "create" in usr_input[0]:
                 # Only allow certain user to create an election
