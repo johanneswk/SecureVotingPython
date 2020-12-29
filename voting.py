@@ -4,22 +4,79 @@
 __author__ = '{Johannes Kistemaker}'
 __email__ = '{johannes.kistemaker@hva.nl}'
 
-
-import io
+import hashlib
+import os
 import csv
+import time
+
+from cryptography.fernet import Fernet
+from secure_delete import secure_delete
 
 
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.asymmetric import padding
+def key_create():
+    key = Fernet.generate_key()
+    return key
+
+
+def file_encrypt(original):
+    f = Fernet(mykey)
+
+    encrypted = f.encrypt(original)
+
+    with open("vote.state", 'wb') as file:
+        file.write(encrypted)
+
+
+def file_decrypt(encrypted_file):
+    f = Fernet(mykey)
+
+    with open(encrypted_file, 'rb') as file:
+        encrypted = file.read()
+
+    decrypted = f.decrypt(encrypted)
+
+    return decrypted
 
 
 def vote():
-    pass
+    # Check if voter is in allowed voters list
+    with open('voters.csv') as csv_file_voters:
+        csv_reader = csv.reader(csv_file_voters, delimiter=';')
+        for row_voters in csv_reader:
+            if persId in row_voters:
+                # Hash persID number
+                h = hashlib.sha256()
+                h.update(persId.encode('utf-8'))
+                hash_pid = h.hexdigest()
+
+                # Read temp file and check if voter already voted
+                decrypted_vote_state = file_decrypt("vote.state").decode()
+                csv_reader = csv.reader(decrypted_vote_state, delimiter=';')
+                for row_votes in csv_reader:
+                    if hash_pid in row_votes:
+                        print("\nYou aren't eligible to vote or have already voted\n")
+                        return
+
+                # Add casted vote to temp file
+                new_vote_state = decrypted_vote_state + str(hash_pid) + ";" + str(canId) + "\n"
+                file_encrypt(new_vote_state.encode())
+                print("Vote casted!")
+                return
+
+        print("You aren't eligible to vote, or have already voted")
+        return
 
 
 def create():
-    pass
+
+    f = Fernet(mykey)
+    encrypted = f.encrypt("hash_pid;canId\n".encode())
+
+    with open("vote.state", 'wb') as file:
+        file.write(encrypted)
+    file.close()
+
+    return
 
 
 def results():
@@ -31,15 +88,25 @@ def stats():
 
 
 def delete():
-    pass
+    try:
+        f = open("vote.state")
+        f.close()
+        secure_delete.secure_random_seed_init()
+        secure_delete.secure_delete("vote.state")
+    except IOError:
+        print("Vote file does not exist, first run")
 
 
 if __name__ == '__main__':
     # Permanently delete last election at run
     delete()
     try:
+        # Create encryption key
+        mykey = key_create()
+
         # Start new election
         create()
+        # print(file_decrypt("vote.state").decode())
 
         print("Welcome to this electronic voting program!")
         while True:
@@ -57,7 +124,7 @@ if __name__ == '__main__':
                 print('\tShow statistics')
                 print('Usage: delete')
                 print('\tDelete all information (securily)')
-            if "vote" in usr_input[0]:
+            elif "vote" in usr_input[0]:
                 if not ("-p" and "-c") in usr_input:
                     print("Error, try again")
                 else:
@@ -67,18 +134,29 @@ if __name__ == '__main__':
                     canId = usr_input[(c + 1)]
                     print(persId)
                     print(canId)
+
+                    # Collect vote
                     vote()
-            if "create":
+
+                    # Overwrite persId
+                    persId = os.urandom(16)
+
+                    print(file_decrypt("vote.state").decode())
+
+
+
+            elif "create" in usr_input[0]:
                 # Only allow certain user to create an election
                 create()
-            if "results":
+            elif "results" in usr_input[0]:
                 # Only allow certain user to publish election results and close election afterwards
                 results()
-            if "stats":
+            elif "stats" in usr_input[0]:
                 # Diagnostic stats?
                 stats()
-            if "delete":
-                # Delete all casted votes + diagnostics
+            elif "delete" in usr_input[0]:
+                # Delete all casted votes + diagnostics?
+                print("delete")
                 delete()
 
     except IndexError:
