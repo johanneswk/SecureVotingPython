@@ -57,7 +57,7 @@ def vote(voter, candidate):
                 # Add casted vote to temp file
                 new_vote_state = decrypted_vote_state + str(hash_pid) + ";" + str(candidate) + "\n"
                 file_encrypt(new_vote_state.encode())
-                print("Vote casted!")
+                print("Vote casted! ")
                 return
 
         print("You aren't eligible to vote, or have already voted")
