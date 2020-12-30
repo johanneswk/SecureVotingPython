@@ -77,10 +77,13 @@ def create():
 
 
 def results():
+    # Publish results on CLI
     decrypted_vote_state = file_decrypt("vote.state").decode()
     print("EK: " + str(decrypted_vote_state.count("EK")))
     print("FS: " + str(decrypted_vote_state.count("FS")))
     print("TK: " + str(decrypted_vote_state.count("TK")))
+
+    # To-do: Create anonymized file with results and delete temp file
 
 
 def stats():
@@ -109,8 +112,8 @@ if __name__ == '__main__':
         # print(file_decrypt("vote.state").decode())
 
         print("Welcome to this electronic voting program!")
+        print("Type '?' for all possible arguments")
         while True:
-            print("Type '?' for all possible arguments")
             usr_input = input("> ").split()
 
             if "?" in usr_input[0]:
@@ -156,6 +159,8 @@ if __name__ == '__main__':
                 # Delete all casted votes + diagnostics?
                 print("delete")
                 delete()
+            else:
+                print("Type '?' for all possible arguments")
 
     except IndexError:
         print("Do better testing!")

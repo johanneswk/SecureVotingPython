@@ -2,4 +2,9 @@
 
 Work in progress
 
-Please never use provided public and private keys for your own project, that is dumb and very very insecure
+To do:
+- Allow exporting encryption key
+- Create election by certain user
+- Delete election by certain user
+- Error stats (faulty logins, voted twice etc.)
+- Publish election results
