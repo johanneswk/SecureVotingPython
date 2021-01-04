@@ -9,6 +9,9 @@ import os
 
 from cryptography.fernet import Fernet
 from secure_delete import secure_delete
+from Crypto.Hash import SHA256
+from Crypto.Signature import PKCS1_v1_5
+from Crypto.PublicKey import RSA
 
 
 def key_create():
@@ -65,7 +68,6 @@ def vote(voter, candidate):
 
 
 def create():
-
     f = Fernet(mykey)
     encrypted = f.encrypt("hash_pid;canId\n".encode())
 
@@ -78,10 +80,33 @@ def create():
 
 def results():
     # Publish results on CLI
-    decrypted_vote_state = file_decrypt("vote.state").decode()
-    print("EK: " + str(decrypted_vote_state.count("EK")))
-    print("FS: " + str(decrypted_vote_state.count("FS")))
-    print("TK: " + str(decrypted_vote_state.count("TK")))
+    decrypted_vote_state = file_decrypt("vote.state").decode().replace("\n", ";")
+    voterlist = decrypted_vote_state.split(";")
+
+    votes_emeri = decrypted_vote_state.count("EK")
+    votes_frans = decrypted_vote_state.count("FS")
+    votes_tim = decrypted_vote_state.count("TK")
+    print("EK: " + str(votes_emeri) + "\nFS: " + str(votes_frans) + "\nTK: " + str(votes_tim))
+
+    # Publish results in result.csv
+    result = str(votes_emeri) + str(votes_frans) + str(votes_tim)
+
+    with open('signer@cs-hva.nl.prv', 'r') as f:
+        key = RSA.importKey(f.read())
+    f.close()
+
+    h = hashlib.sha256()
+    h.update(result.encode('utf-8'))
+    signer = PKCS1_v1_5.new(key)
+    signature = signer.sign(h)
+
+    with open("results.csv", 'w') as g:
+        g.write(result)
+    g.close()
+
+    with open("signature.sign", 'w') as h:
+        h.write(signature)
+    h.close()
 
     # To-do: Create anonymized file with results and delete temp file
 
