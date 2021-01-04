@@ -7,4 +7,3 @@ To do:
 - Create election by certain user
 - Delete election by certain user
 - Error stats (faulty logins, voted twice etc.)
-- Publish election results
