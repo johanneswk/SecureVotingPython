@@ -70,6 +70,7 @@ def vote(voter, candidate):
 
 
 def create():
+    delete()
     f = Fernet(mykey)
     encrypted = f.encrypt("hash_pid;canId\n".encode())
 
@@ -139,8 +140,6 @@ def delete():
 
 
 if __name__ == '__main__':
-    # Permanently delete last election at run
-    delete()
     try:
         # Create encryption key
         mykey = key_create()
