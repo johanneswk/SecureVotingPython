@@ -23,9 +23,12 @@ Commands:
   - Takes all the data from the encrypted `vote.state` and saves it as `results.txt`.
   - Sign the result info from inside `results.txt` to `signature.sign`.
   - Creates a file `recount.file`. This stores all the casted votes individually but without voterID info.
-  - Deletes `vote.state`, but keeps `recount.file` 
+  - Deletes `vote.state`, but keeps `recount.file`
+  
+- `check`
+  - Checks if the user has already voted and shows their random number (1-1000) to verify a stored vote.
 - `delete`
-  - Deletes both `vote.state` and `recount.file`
+  - Deletes both `vote.state` and `recount.file`.
 
 Example:
 
@@ -39,6 +42,5 @@ Example:
 
 
 To do:
-- Create election by certain user
-- Delete election by certain user
+- Create / delete / results election by certain user
 - Error stats (faulty logins, voted twice etc.)
