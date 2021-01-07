@@ -1,2 +1,12 @@
 /signer@cs-hva.nl.prv
 /signer@cs-hva.nl.pub
+/.idea/inspectionProfiles/profiles_settings.xml
+/.idea/misc.xml
+/.idea/modules.xml
+/.idea/SecureVotingPython.iml
+/.idea/vcs.xml
+/recount.file
+/results.csv
+/results.txt
+/signature.sign
+/vote.state
