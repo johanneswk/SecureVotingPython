@@ -7,21 +7,23 @@ __email__ = '{johannes.kistemaker@hva.nl}'
 import hashlib
 import os
 
-from Crypto.Random import random
 from cryptography.fernet import Fernet
 from secure_delete import secure_delete
 
+from Crypto.Random import random
 from Crypto.Signature.pkcs1_15 import PKCS115_SigScheme
 from Crypto.Hash import SHA256
 from Crypto.PublicKey import RSA
 
 
 def key_create():
+    # Create key for symmetric encryption
     key = Fernet.generate_key()
     return key
 
 
 def hasher_pid(person):
+    # Hasher for PersId
     h = hashlib.sha256()
     h.update(person.encode('utf-8'))
     hash_pid = h.hexdigest()
@@ -29,6 +31,7 @@ def hasher_pid(person):
 
 
 def file_encrypt(original):
+    # Encrypt voting file having the username hash and vote
     f = Fernet(mykey)
     encrypted = f.encrypt(original)
 
@@ -37,6 +40,7 @@ def file_encrypt(original):
 
 
 def file_decrypt(encrypted_file):
+    # Decrypt voting file
     f = Fernet(mykey)
 
     with open(encrypted_file, 'rb') as file:
@@ -47,6 +51,7 @@ def file_decrypt(encrypted_file):
 
 
 def recount_file():
+    # File used for recounts
     decrypted_vote_state = file_decrypt("vote.state").decode().replace("\n", ";")
     vote_list = decrypted_vote_state.split(";")
     anonymized_votes = vote_list[1::2]
@@ -69,16 +74,17 @@ def check_temp_voter_file():
 
 
 def random_num(pid):
+    # Generate random int and store with hashed PersonId
     random_int = random.randint(1, 1000)
-    print(random_int)
+    # print(random_int)
 
     voted_code.append([pid, random_int])
-    print(voted_code)
+    # print(voted_code)
     return random_int
 
 
 def vote(voter, candidate):
-    # Check if voter is in allowed voters list
+    # Lets a validated user vote to temp file by hash from PersId
     with open('voters.csv') as csv_file_voters:
         csv_voters = csv_file_voters.read().split(";", 2)
         for row_voter_info in csv_voters:
@@ -106,6 +112,7 @@ def vote(voter, candidate):
 
 
 def create():
+    # Create new election
     delete(arg="create")
     f = Fernet(mykey)
     encrypted = f.encrypt("hash_pid;canId\n".encode())
@@ -117,7 +124,7 @@ def create():
 
 
 def results():
-    # Publish results on CLI
+    # Publish results from election on CLI
     decrypted_vote_state = file_decrypt("vote.state").decode().replace("\n", ";")
 
     votes_emeri = decrypted_vote_state.count("EK")
@@ -152,10 +159,12 @@ def results():
 
 
 def stats():
+    # All print statements to file
     pass
 
 
 def check(pers_id):
+    # Check if user voted and secure code
     hash_pid = hasher_pid(pers_id)
     for items in voted_code:
         for item in items:
@@ -166,20 +175,28 @@ def check(pers_id):
 
 
 def delete(arg):
+    # Delete files securely
     if arg == "delete":
         try:
-            f = open("vote.state")
-            f.close()
+            # f = open("vote.state")
+            # f.close()
             secure_delete.secure_random_seed_init()
             secure_delete.secure_delete("vote.state")
             secure_delete.secure_delete("recount.file")
         except IOError:
             print("Error in deleting files securely")
 
+    elif arg == "delete recount":
+        try:
+            secure_delete.secure_random_seed_init()
+            secure_delete.secure_delete("recount.file")
+        except IOError:
+            print("Error in deleting recount file securely")
+
     elif arg == "start":
         try:
-            f = open("vote.state")
-            f.close()
+            # f = open("vote.state")
+            # f.close()
             secure_delete.secure_random_seed_init()
             secure_delete.secure_delete("vote.state")
         except IOError:
@@ -267,14 +284,18 @@ if __name__ == '__main__':
                             # Overwrite persId
                             persId = os.urandom(16)
                     elif "delete" in usr_input[0]:
-                        if check_temp_voter_file():
-                            # Delete all casted votes + recount file?
+                        if "recount" in usr_input:
+                            # Delete recount file
+                            print("Recount file")
+                            delete(arg="delete recount")
+                        elif check_temp_voter_file():
+                            # Delete all casted votes + recount file
                             print("Delete voter files")
                             delete(arg="delete")
                     else:
                         print("Type '?' for all possible arguments")
 
-    except DeprecationWarning:
+    except:
         try:
             # Store only anonymized file for counting
             recount_file()
