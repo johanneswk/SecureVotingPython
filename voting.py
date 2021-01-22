@@ -159,6 +159,7 @@ def results():
 
 
 def stats():
+    print("To be implemented")
     # All print statements to file
     pass
 
@@ -202,7 +203,7 @@ def delete(arg):
         except IOError:
             print("First run, creating election...")
 
-    elif arg == "crash" or arg == "results":
+    elif arg == "crash":
         try:
             # f = open("vote.state")
             # f.close()
@@ -210,6 +211,17 @@ def delete(arg):
             secure_delete.secure_delete("vote.state")
         except IOError:
             print("Error in deleting files at crash")
+
+    elif arg == "results":
+        try:
+            # f = open("vote.state")
+            # f.close()
+            secure_delete.secure_random_seed_init()
+            secure_delete.secure_delete("vote.state")
+            raise SystemExit
+            # exit()
+        except IOError:
+            print("Error in deleting files after results")
 
 
 if __name__ == '__main__':
@@ -226,6 +238,8 @@ if __name__ == '__main__':
             # Check user input
             try:
                 usr_input = input("> ").split()
+            except KeyboardInterrupt:
+                pass
             finally:
                 if not usr_input:
                     print("Type '?' for all possible arguments")
@@ -294,6 +308,9 @@ if __name__ == '__main__':
                             delete(arg="delete")
                     else:
                         print("Type '?' for all possible arguments")
+
+    except SystemExit:
+        exit()
 
     except:
         try:
