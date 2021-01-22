@@ -132,7 +132,7 @@ def results():
     votes_tim = decrypted_vote_state.count("TK")
     print("EK: " + str(votes_emeri) + "\nFS: " + str(votes_frans) + "\nTK: " + str(votes_tim))
 
-    # Publish results in result.csv
+    # Publish results in result.txt
     result = ("EK: " + str(votes_emeri) + "\nFS: " + str(votes_frans) + "\nTK: " + str(votes_tim)).encode()
 
     with open('signer@cs-hva.nl.prv', 'r') as f:
@@ -179,8 +179,6 @@ def delete(arg):
     # Delete files securely
     if arg == "delete":
         try:
-            # f = open("vote.state")
-            # f.close()
             secure_delete.secure_random_seed_init()
             secure_delete.secure_delete("vote.state")
             secure_delete.secure_delete("recount.file")
@@ -194,10 +192,8 @@ def delete(arg):
         except IOError:
             print("Error in deleting recount file securely")
 
-    elif arg == "start":
+    elif arg == "create":
         try:
-            # f = open("vote.state")
-            # f.close()
             secure_delete.secure_random_seed_init()
             secure_delete.secure_delete("vote.state")
         except IOError:
@@ -205,8 +201,6 @@ def delete(arg):
 
     elif arg == "crash":
         try:
-            # f = open("vote.state")
-            # f.close()
             secure_delete.secure_random_seed_init()
             secure_delete.secure_delete("vote.state")
         except IOError:
@@ -214,12 +208,9 @@ def delete(arg):
 
     elif arg == "results":
         try:
-            # f = open("vote.state")
-            # f.close()
             secure_delete.secure_random_seed_init()
             secure_delete.secure_delete("vote.state")
             raise SystemExit
-            # exit()
         except IOError:
             print("Error in deleting files after results")
 
